@@ -97,6 +97,10 @@ shipai status
 # Install dependencies
 pnpm install
 
+# Set up environment variables (optional, for analytics/monetization)
+cp .env.example .env.local
+# Add your actual values to .env.local if you want analytics
+
 # Run development server
 pnpm dev
 

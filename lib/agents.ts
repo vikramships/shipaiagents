@@ -94,18 +94,13 @@ export const categories: Category[] = [
   { id: 'ai-innovation', name: 'AI & Innovation', count: 4, color: 'bg-pink-400' },
 ];
 
-import { 
+import {
   Target, TrendingUp, Users, DollarSign, BarChart3,
-  Code2, Wrench, Plug, Database, TrendingDown,
-  Link, Smartphone, Zap, TestTube, Shield,
-  PieChart, Brain, Palette, Cpu, Calculator,
-  Search, Settings, Archive, Activity, BookOpen,
-  Check, Bug, AlertTriangle,
-  PlayCircle, Stethoscope, Eye,
-  ShieldCheck, AlertCircle,
-  Coins, TrendingDown as Optimize, Clock, Zap as FastIcon,
-  GitBranch, FileText, Bot, MessageSquare, FileCode, Globe,
-  Layers, Terminal, GitPullRequest, Lightbulb, Rocket, Book
+  Plug, Database, Link, Smartphone, Zap, TestTube, Shield,
+  Brain, Palette, Cpu, Calculator, Settings, Archive, Activity,
+  BookOpen, Check, Bug, PlayCircle, Stethoscope, Eye,
+  ShieldCheck, AlertCircle, MessageSquare, FileCode,
+  Terminal, Lightbulb, Rocket, Book, GitBranch, TrendingDown
 } from 'lucide-react';
 
 export const agents: Agent[] = [
