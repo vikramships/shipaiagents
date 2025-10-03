@@ -1,12 +1,21 @@
 import Link from 'next/link'
 import DarkModeToggle from './DarkModeToggle'
-import { Terminal, Github } from 'lucide-react'
+import { Terminal, Github, Twitter } from 'lucide-react'
 
 export default function Header() {
   return (
     <div className="mb-12">
       {/* Top right controls - hidden on mobile, visible on larger screens */}
       <div className="hidden sm:flex justify-end items-center gap-3 mb-6">
+        <a
+          href="https://x.com/vikramships"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-accent transition-colors text-sm"
+        >
+          <Twitter size={16} />
+          X
+        </a>
         <a
           href="https://github.com/vikramships/shipaiagents"
           target="_blank"
@@ -40,6 +49,15 @@ export default function Header() {
 
       {/* Mobile controls - below title */}
       <div className="flex sm:hidden justify-center items-center gap-3 mt-6">
+        <a
+          href="https://x.com/vikramships"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-accent transition-colors text-sm"
+        >
+          <Twitter size={16} />
+          X
+        </a>
         <a
           href="https://github.com/vikramships/shipaiagents"
           target="_blank"
