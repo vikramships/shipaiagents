@@ -1,8 +1,10 @@
 import chalk from 'chalk';
 import ora from 'ora';
 import inquirer from 'inquirer';
-import { detectConfigFiles, readConfigFile, writeConfigFile, backupConfigFile, getInstalledAgents } from '../utils/fileUtils';
-import { getAgentById, removeAgentFromContent } from '../utils/agentUtils';
+import { detectConfigFiles, readConfigFile, writeConfigFile, backupConfigFile } from '../utils/fileUtils';
+import { getAgentById, getCategoryName } from '../utils/agentUtils';
+import fs from 'fs-extra';
+import path from 'path';
 
 interface UninstallOptions {
   all?: boolean;
@@ -11,17 +13,19 @@ interface UninstallOptions {
 
 export async function uninstallCommand(agentIds: string[], options: UninstallOptions): Promise<void> {
   try {
-    // Find configuration files
-    const configFiles = await detectConfigFiles();
-    const claudeConfig = configFiles.find(f => f.type === 'claude-code');
+    // Check agents directory
+    const agentsDir = path.join(process.cwd(), '.claude', 'agents');
 
-    if (!claudeConfig || !claudeConfig.exists) {
-      console.log(chalk.yellow('No CLAUDE.md configuration file found.'));
+    if (!fs.existsSync(agentsDir)) {
+      console.log(chalk.yellow('No agents directory found.'));
       return;
     }
 
-    // Get installed agents
-    const installedAgents = await getInstalledAgents(claudeConfig.path);
+    // Get installed agents by reading agent files
+    const agentFiles = await fs.readdir(agentsDir);
+    const installedAgents = agentFiles
+      .filter(file => file.endsWith('.md'))
+      .map(file => file.replace('.md', ''));
 
     if (installedAgents.length === 0) {
       console.log(chalk.blue('No agents are currently installed.'));
@@ -31,7 +35,7 @@ export async function uninstallCommand(agentIds: string[], options: UninstallOpt
     let agentsToRemove: string[] = agentIds;
 
     if (options.all) {
-      agentsToRemove = installedAgents.map(agent => agent.id);
+      agentsToRemove = installedAgents;
     }
 
     if (agentsToRemove.length === 0) {
@@ -42,12 +46,17 @@ export async function uninstallCommand(agentIds: string[], options: UninstallOpt
 
     // Validate agent IDs and find matching installed agents
     const validRemovals = agentsToRemove.map(id => {
-      const installedAgent = installedAgents.find(agent => agent.id === id);
-      if (!installedAgent) {
-        console.log(chalk.yellow(`⚠️  Agent not installed: ${id}`));
+      const agent = getAgentById(id);
+      const isInstalled = installedAgents.includes(id);
+      if (!agent) {
+        console.log(chalk.yellow(`⚠️  Agent not found: ${id}`));
         return null;
       }
-      return installedAgent;
+      if (!isInstalled) {
+        console.log(chalk.yellow(`⚠️  Agent not installed: ${agent.name}`));
+        return null;
+      }
+      return agent;
     }).filter(Boolean);
 
     if (validRemovals.length === 0) {
@@ -58,9 +67,10 @@ export async function uninstallCommand(agentIds: string[], options: UninstallOpt
     // Show what will be removed
     console.log(chalk.bold.red('\n🗑️  Ready to remove:'));
     validRemovals.forEach(agent => {
+      const agentFilePath = path.join(agentsDir, `${agent!.id}.md`);
       console.log(`  ${chalk.bold(agent!.name)} (${agent!.id})`);
+      console.log(chalk.dim(`    → ${agentFilePath}`));
     });
-    console.log(chalk.dim(`From file: ${claudeConfig.path}`));
 
     if (options.dryRun) {
       console.log(chalk.yellow('\n🔍 Dry run mode - no changes made.'));
@@ -82,25 +92,27 @@ export async function uninstallCommand(agentIds: string[], options: UninstallOpt
       return;
     }
 
-    // Create backup
+    // Create backup of CLAUDE.md if it exists
     const spinner = ora('Creating backup...').start();
     try {
-      await backupConfigFile(claudeConfig.path);
-      spinner.succeed('Backup created');
+      const claudeMdPath = path.join(process.cwd(), 'CLAUDE.md');
+      if (fs.existsSync(claudeMdPath)) {
+        await backupConfigFile(claudeMdPath);
+        spinner.succeed('Backup created');
+      } else {
+        spinner.stop();
+      }
     } catch (error) {
       spinner.fail('Failed to create backup');
       throw error;
     }
 
-    // Read current config and remove agents
-    spinner.start('Reading configuration...');
-    let configContent = await readConfigFile(claudeConfig.path);
-    spinner.succeed('Configuration loaded');
-
+    // Remove agent files
     for (const agent of validRemovals) {
       spinner.start(`Removing ${agent!.name}...`);
       try {
-        configContent = removeAgentFromContent(configContent, agent!.id);
+        const agentFilePath = path.join(agentsDir, `${agent!.id}.md`);
+        await fs.remove(agentFilePath);
         spinner.succeed(`Removed ${agent!.name}`);
       } catch (error) {
         spinner.fail(`Failed to remove ${agent!.name}`);
@@ -108,13 +120,47 @@ export async function uninstallCommand(agentIds: string[], options: UninstallOpt
       }
     }
 
-    // Write updated content
-    spinner.start('Writing configuration file...');
+    // Update main CLAUDE.md to remove agent references
+    spinner.start('Updating main configuration...');
     try {
-      await writeConfigFile(claudeConfig.path, configContent);
+      const claudeMdPath = path.join(process.cwd(), 'CLAUDE.md');
+      let claudeContent = '';
+
+      try {
+        claudeContent = await fs.readFile(claudeMdPath, 'utf8');
+      } catch (error) {
+        // CLAUDE.md doesn't exist, nothing to update
+        spinner.stop();
+        return;
+      }
+
+      // Remove agent links from the agents section
+      const remainingAgents = installedAgents.filter(id => !validRemovals.some(agent => agent!.id === id));
+
+      const agentsSection = '\n## Installed Agents\n\n';
+      const agentList = remainingAgents.map(agentId => {
+        const agent = getAgentById(agentId);
+        return agent ? `- [${agent.name}](${path.join('.claude/agents', `${agentId}.md`)}) - ${agent.description}` : '';
+      }).filter(Boolean).join('\n');
+
+      const agentsSectionStart = claudeContent.indexOf('## Installed Agents');
+      if (agentsSectionStart !== -1) {
+        const nextSectionMatch = claudeContent.slice(agentsSectionStart).match(/^##/m);
+        if (nextSectionMatch && nextSectionMatch.index! > 0) {
+          const endPosition = agentsSectionStart + nextSectionMatch.index!;
+          claudeContent = claudeContent.slice(0, agentsSectionStart) +
+                         (remainingAgents.length > 0 ? agentsSection + agentList + '\n' : '') +
+                         claudeContent.slice(endPosition);
+        } else {
+          claudeContent = claudeContent.slice(0, agentsSectionStart) +
+                         (remainingAgents.length > 0 ? agentsSection + agentList : '');
+        }
+      }
+
+      await fs.writeFile(claudeMdPath, claudeContent, 'utf8');
       spinner.succeed('Configuration updated');
     } catch (error) {
-      spinner.fail('Failed to write configuration');
+      spinner.fail('Failed to update configuration');
       throw error;
     }
 

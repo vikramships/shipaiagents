@@ -1,7 +1,9 @@
 import chalk from 'chalk';
 import { table } from 'table';
-import { detectConfigFiles, getInstalledAgents } from '../utils/fileUtils';
-import { getCategoryName } from '../utils/agentUtils';
+import { detectConfigFiles } from '../utils/fileUtils';
+import { getAgentById, getCategoryName } from '../utils/agentUtils';
+import fs from 'fs-extra';
+import path from 'path';
 
 interface StatusOptions {
   json?: boolean;
@@ -9,21 +11,29 @@ interface StatusOptions {
 
 export async function statusCommand(options: StatusOptions): Promise<void> {
   try {
-    // Detect configuration files
-    const configFiles = await detectConfigFiles();
-    const claudeConfig = configFiles.find(f => f.type === 'claude-code');
+    // Check agents directory
+    const agentsDir = path.join(process.cwd(), '.claude', 'agents');
 
-    if (!claudeConfig || !claudeConfig.exists) {
-      console.log(chalk.yellow('No CLAUDE.md configuration file found.'));
+    if (!fs.existsSync(agentsDir)) {
+      console.log(chalk.yellow('No agents directory found.'));
       console.log(chalk.blue('Use "shipai install <agent>" to install your first agent.'));
       return;
     }
 
-    // Get installed agents
-    const installedAgents = await getInstalledAgents(claudeConfig.path);
+    // Get installed agents by reading agent files
+    const agentFiles = await fs.readdir(agentsDir);
+    const installedAgentIds = agentFiles
+      .filter(file => file.endsWith('.md'))
+      .map(file => file.replace('.md', ''));
+
+    const installedAgents = installedAgentIds.map(id => {
+      const agent = getAgentById(id);
+      return agent ? { ...agent, installed: true } : null;
+    }).filter(Boolean);
 
     console.log(chalk.bold.blue('\n📊 Agent Status\n'));
-    console.log(chalk.white(`Configuration file: ${claudeConfig.path}`));
+    console.log(chalk.white(`Agents directory: ${agentsDir}`));
+    console.log(chalk.white(`Configuration file: CLAUDE.md`));
 
     if (installedAgents.length === 0) {
       console.log(chalk.yellow('\nNo agents are currently installed.'));
@@ -42,6 +52,7 @@ export async function statusCommand(options: StatusOptions): Promise<void> {
 
     // Group agents by category
     const agentsByCategory = installedAgents.reduce((acc, agent) => {
+      if (!agent) return acc;
       // Try to find category by looking up agent in the main agents list
       const category = inferCategory(agent.name, agent.id);
       if (!acc[category]) {
@@ -54,11 +65,10 @@ export async function statusCommand(options: StatusOptions): Promise<void> {
     for (const [category, categoryAgents] of Object.entries(agentsByCategory)) {
       console.log(chalk.bold.cyan(`\n📁 ${category} (${categoryAgents.length})`));
 
-      const data = categoryAgents.map(agent => [
-        agent.name,
-        agent.version,
-        new Date(agent.installedAt).toLocaleDateString(),
-        agent.configPath
+      const data = categoryAgents.filter(agent => agent).map(agent => [
+        agent!.name,
+        getCategoryName(agent!.category),
+        path.join('.claude/agents', `${agent!.id}.md`)
       ]);
 
       const tableConfig = {

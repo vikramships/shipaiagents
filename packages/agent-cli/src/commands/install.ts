@@ -21,11 +21,14 @@ export async function installCommand(agentIds: string[], options: InstallOptions
       console.log(chalk.blue('Creating CLAUDE.md configuration file...'));
     }
 
-    // Find or create CLAUDE.md file (default for Claude Code)
-    const configFile = await findOrCreateConfigFile('claude-code');
+    // Create agents directory if it doesn't exist
+    const fs = require('fs-extra');
+    const path = require('path');
+    const agentsDir = path.join(process.cwd(), '.claude', 'agents');
 
-    if (!configFile.exists) {
-      console.log(chalk.green(`✓ Created ${configFile.path}`));
+    if (!fs.existsSync(agentsDir)) {
+      await fs.ensureDir(agentsDir);
+      console.log(chalk.green(`✓ Created agents directory: ${agentsDir}`));
     }
 
     // Determine which agents to install
@@ -66,19 +69,24 @@ export async function installCommand(agentIds: string[], options: InstallOptions
       return;
     }
 
-    // Read current config content
+    // Read current CLAUDE.md content for backup
     let configContent = '';
     try {
-      configContent = await readConfigFile(configFile.path);
+      const claudeMdPath = path.join(process.cwd(), 'CLAUDE.md');
+      configContent = await readConfigFile(claudeMdPath);
     } catch (error) {
-      console.log(chalk.blue('Creating new configuration file...'));
+      console.log(chalk.blue('No existing CLAUDE.md found.'));
     }
 
-    // Check for existing installations
+    // Check for existing installations by checking agent files
     const existingAgents = new Set();
-    const agentBlocks = configContent.split(/<!-- Agent: ([\w-]+) -->/g);
-    for (let i = 1; i < agentBlocks.length; i += 2) {
-      existingAgents.add(agentBlocks[i]);
+    try {
+      const agentFiles: string[] = await fs.readdir(agentsDir);
+      agentFiles.filter((file: string) => file.endsWith('.md')).forEach((file: string) => {
+        existingAgents.add(file.replace('.md', ''));
+      });
+    } catch (error) {
+      // Directory doesn't exist or is empty
     }
 
     // Filter out already installed agents (unless force is used)
@@ -99,10 +107,12 @@ export async function installCommand(agentIds: string[], options: InstallOptions
     // Show what will be installed
     console.log(chalk.bold.blue('\n📦 Ready to install:'));
     agentsToActuallyInstall.forEach(agent => {
-      const status = existingAgents.has(agent!.id) ? chalk.yellow('(reinstall)') : chalk.green('(new)');
+      const agentFilePath = path.join(agentsDir, `${agent!.id}.md`);
+      const exists = fs.existsSync(agentFilePath);
+      const status = exists ? chalk.yellow('(reinstall)') : chalk.green('(new)');
       console.log(`  ${chalk.bold(agent!.name)} ${status}`);
+      console.log(chalk.dim(`    → ${agentFilePath}`));
     });
-    console.log(chalk.dim(`Target file: ${configFile.path}`));
 
     if (options.dryRun) {
       console.log(chalk.yellow('\n🔍 Dry run mode - no changes made.'));
@@ -124,11 +134,12 @@ export async function installCommand(agentIds: string[], options: InstallOptions
       return;
     }
 
-    // Create backup
+    // Create backup if CLAUDE.md exists
     const spinner = ora('Creating backup...').start();
     try {
+      const claudeMdPath = path.join(process.cwd(), 'CLAUDE.md');
       if (configContent) {
-        await backupConfigFile(configFile.path);
+        await backupConfigFile(claudeMdPath);
         spinner.succeed('Backup created');
       } else {
         spinner.stop();
@@ -138,25 +149,68 @@ export async function installCommand(agentIds: string[], options: InstallOptions
       throw error;
     }
 
-    // Install agents
-    let updatedContent = configContent;
+    // Install agents as individual files
+    const installedAgents = [];
 
     for (const agent of agentsToActuallyInstall) {
       spinner.start(`Installing ${agent!.name}...`);
 
       try {
-        updatedContent = updateAgentInContent(updatedContent, agent!);
+        const agentFilePath = path.join(agentsDir, `${agent!.id}.md`);
+        const agentContent = formatAgentForInstall(agent!, 'claude-code');
+
+        await fs.writeFile(agentFilePath, agentContent, 'utf8');
         spinner.succeed(`Installed ${agent!.name}`);
+        installedAgents.push(agent!.id);
       } catch (error) {
         spinner.fail(`Failed to install ${agent!.name}`);
         throw error;
       }
     }
 
-    // Write updated content
-    spinner.start('Writing configuration file...');
+    // Update main CLAUDE.md with agent references
+    spinner.start('Updating main configuration...');
     try {
-      await writeConfigFile(configFile.path, updatedContent);
+      const claudeMdPath = path.join(process.cwd(), 'CLAUDE.md');
+      let claudeContent = '';
+
+      try {
+        claudeContent = await fs.readFile(claudeMdPath, 'utf8');
+      } catch (error) {
+        // Create new CLAUDE.md if it doesn't exist
+        claudeContent = `# AI Agents Configuration
+
+This directory contains individual AI agent configurations.
+
+## Installed Agents
+
+`;
+      }
+
+      // Add/update agents section
+      const agentsSection = '\n## Installed Agents\n\n';
+      const agentList = installedAgents.map(agentId => {
+        const agent = getAgentById(agentId);
+        return `- [${agent!.name}](${path.join('.claude/agents', `${agentId}.md`)}) - ${agent!.description}`;
+      }).join('\n');
+
+      const agentsSectionStart = claudeContent.indexOf('## Installed Agents');
+      if (agentsSectionStart !== -1) {
+        const nextSectionMatch = claudeContent.slice(agentsSectionStart).match(/^##/m);
+        if (nextSectionMatch) {
+          const endPosition = agentsSectionStart + nextSectionMatch.index!;
+          claudeContent = claudeContent.slice(0, agentsSectionStart) +
+                         agentsSection + agentList + '\n' +
+                         claudeContent.slice(endPosition);
+        } else {
+          claudeContent = claudeContent.slice(0, agentsSectionStart) +
+                         agentsSection + agentList;
+        }
+      } else {
+        claudeContent += agentsSection + agentList + '\n';
+      }
+
+      await fs.writeFile(claudeMdPath, claudeContent, 'utf8');
       spinner.succeed('Configuration updated');
     } catch (error) {
       spinner.fail('Failed to write configuration');
@@ -164,7 +218,8 @@ export async function installCommand(agentIds: string[], options: InstallOptions
     }
 
     console.log(chalk.green(`\n✅ Successfully installed ${agentsToActuallyInstall.length} agent(s)!`));
-    console.log(chalk.white(`Configuration file: ${configFile.path}`));
+    console.log(chalk.white(`Agents directory: ${agentsDir}`));
+    console.log(chalk.white(`Main configuration: CLAUDE.md`));
 
   } catch (error) {
     console.error(chalk.red('Installation failed:'), error);
