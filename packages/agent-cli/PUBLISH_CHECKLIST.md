@@ -97,11 +97,11 @@ shipai list
 npm view @shipai/cli
 ```
 
-### Create GitHub Repository
-- Create repo: `shipai-cli`
-- Push code
-- Add README and documentation
-- Set up GitHub Actions for CI/CD
+### GitHub Repository
+- Repository: `https://github.com/vikramships/shipaiagents`
+- Code already pushed
+- Documentation included
+- Ready for contributions
 
 ### Promote the CLI
 - Share on social media

@@ -17,7 +17,7 @@
 
 ### 📄 **Open Source Setup**
 - **License**: MIT License (© 2025 ShipAI)
-- **Repository**: Ready for GitHub (`shipai/shipai-cli`)
+- **Repository**: Ready for GitHub (`vikramships/shipaiagents`)
 - **Contributing Guide**: Full contribution guidelines
 - **Code Structure**: Professional, documented, tested
 
@@ -95,7 +95,7 @@ shipai uninstall        # Remove agents
 4. **Verify**: `npm install -g @shipai/cli && shipai --help`
 
 ### GitHub Repository
-- **Ready**: `https://github.com/shipai/shipai-cli`
+- **Ready**: `https://github.com/vikramships/shipaiagents`
 - **Structure**: Professional open source setup
 - **Documentation**: CONTRIBUTING.md, LICENSE.md
 - **Community**: Issues, PRs, discussions ready

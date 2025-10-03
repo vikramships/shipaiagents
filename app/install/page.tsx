@@ -267,7 +267,7 @@ export default function InstallPage() {
             </p>
             <div className="flex items-center justify-center gap-4">
               <a
-                href="https://github.com/shipai/shipai-cli"
+                href="https://github.com/vikramships/shipaiagents"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
@@ -275,7 +275,7 @@ export default function InstallPage() {
                 View on GitHub
               </a>
               <a
-                href="https://github.com/shipai/shipai-cli/blob/main/CONTRIBUTING.md"
+                href="https://github.com/vikramships/shipaiagents/blob/main/packages/agent-cli/CONTRIBUTING.md"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-accent transition-colors"

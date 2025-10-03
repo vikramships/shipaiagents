@@ -5,7 +5,7 @@ Thank you for your interest in contributing to ShipAI CLI! This document provide
 ## 🚀 Quick Start
 
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/yourusername/shipai-cli.git`
+2. Clone your fork: `git clone https://github.com/yourusername/shipaiagents.git`
 3. Install dependencies: `pnpm install`
 4. Create your feature branch: `git checkout -b feature/amazing-feature`
 5. Make your changes
@@ -23,8 +23,8 @@ Thank you for your interest in contributing to ShipAI CLI! This document provide
 
 ### Installation
 ```bash
-git clone https://github.com/shipai/shipai-cli.git
-cd shipai-cli
+git clone https://github.com/vikramships/shipaiagents.git
+cd shipaiagents
 pnpm install
 ```
 
