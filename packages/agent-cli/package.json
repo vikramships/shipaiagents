@@ -1,6 +1,6 @@
 {
   "name": "shipai-cli",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "CLI tool to install and manage AI coding agents from shipaiagents.com",
   "main": "dist/index.js",
   "bin": {
