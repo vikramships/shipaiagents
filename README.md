@@ -242,8 +242,8 @@ This project is licensed under the MIT License - see the [LICENSE](./packages/ag
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/shipai/shipai-agents/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/shipai/shipai-agents/discussions)
+- **Issues**: [GitHub Issues](https://github.com/vikramships/shipaiagents/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/vikramships/shipaiagents/discussions)
 - **Email**: [Contact ShipAI](mailto:hello@shipaiagents.com)
 
 ---

@@ -40,10 +40,10 @@ npm pack --dry-run
 ### 2. Update Author/Repository Info
 ```json
 {
-  "author": "Your Name <your.email@gmail.com>",
+  "author": "Vikram <zenohkai@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/agent-cli.git"
+    "url": "https://github.com/vikramships/shipaiagents.git"
   }
 }
 ```
@@ -68,7 +68,7 @@ pnpm run build
 ### 1. Login to NPM
 ```bash
 npm login
-# Use your gmail account credentials
+# Use zenohkai@gmail.com credentials
 ```
 
 ### 2. Publish the Package
