@@ -40,7 +40,7 @@ export default function Home() {
             </div>
             <div className="text-right">
               <code className="bg-background border border-border rounded px-3 py-2 text-sm text-foreground">
-                npm install -g @shipai/cli
+                npm install -g shipai-cli
               </code>
               <p className="text-xs text-muted-foreground mt-1">
                 Open source • MIT License

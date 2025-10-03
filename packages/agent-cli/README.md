@@ -7,13 +7,13 @@ A powerful CLI tool to install and manage AI coding agents from shipaiagents.com
 ### Global Installation (Recommended)
 
 ```bash
-npm install -g @shipai/cli
+npm install -g shipai-cli
 ```
 
 ### Local Installation
 
 ```bash
-npm install @shipai/cli
+npm install shipai-cli
 npx shipai --help
 ```
 

@@ -83,7 +83,7 @@ npm publish
 ### 3. Verify Installation
 ```bash
 # Test global installation
-npm install -g @shipai/cli
+npm install -g shipai-cli
 
 # Test the CLI
 shipai --help
@@ -94,7 +94,7 @@ shipai list
 
 ### Monitor Downloads
 ```bash
-npm view @shipai/cli
+npm view shipai-cli
 ```
 
 ### GitHub Repository

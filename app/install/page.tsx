@@ -53,7 +53,7 @@ export default function InstallPage() {
 
           <div className="bg-muted rounded-lg p-6 mb-6">
             <code className="text-sm text-foreground font-mono">
-              npm install -g @shipai/cli
+              npm install -g shipai-cli
             </code>
           </div>
 
@@ -101,7 +101,7 @@ export default function InstallPage() {
               Install for all users on your system
             </p>
             <code className="block text-xs bg-muted rounded px-2 py-2 font-mono">
-              npm install -g @shipai/cli
+              npm install -g shipai-cli
             </code>
           </div>
 
@@ -111,7 +111,7 @@ export default function InstallPage() {
               Install for a specific project
             </p>
             <code className="block text-xs bg-muted rounded px-2 py-2 font-mono">
-              npm install @shipai/cli
+              npm install shipai-cli
             </code>
           </div>
 
@@ -121,7 +121,7 @@ export default function InstallPage() {
               Alternative package manager
             </p>
             <code className="block text-xs bg-muted rounded px-2 py-2 font-mono">
-              pnpm add -g @shipai/cli
+              pnpm add -g shipai-cli
             </code>
           </div>
         </div>
@@ -232,7 +232,7 @@ export default function InstallPage() {
                 If you get a permission error, try using sudo or fix npm permissions:
               </p>
               <code className="block text-xs bg-muted rounded px-2 py-2 font-mono">
-                sudo npm install -g @shipai/cli
+                sudo npm install -g shipai-cli
               </code>
             </div>
 

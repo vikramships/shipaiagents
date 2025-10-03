@@ -140,7 +140,7 @@ export default function AgentPageClient({ agent }: AgentPageClientProps) {
                 </code>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                Requires ShipAI CLI: <code className="bg-background border border-border rounded px-1">npm install -g @shipai/cli</code>
+                Requires ShipAI CLI: <code className="bg-background border border-border rounded px-1">npm install -g shipai-cli</code>
               </p>
             </div>
           </div>

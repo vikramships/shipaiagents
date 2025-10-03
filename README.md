@@ -19,7 +19,7 @@ Open-source command-line tool to install and manage AI coding agents directly in
 
 ### Installation
 ```bash
-npm install -g @shipai/cli
+npm install -g shipai-cli
 ```
 
 ### Quick Start
@@ -72,7 +72,7 @@ shipai-agents/
 
 ### 1. Install the CLI
 ```bash
-npm install -g @shipai/cli
+npm install -g shipai-cli
 ```
 
 ### 2. Browse Available Agents
@@ -197,7 +197,7 @@ The main CLI package for installing and managing AI agents.
 
 **Installation:**
 ```bash
-npm install -g @shipai/cli
+npm install -g shipai-cli
 ```
 
 **Dependencies:**
