@@ -18,7 +18,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const enableAnalytics = process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === "true";
   const enableAdSense = process.env.NEXT_PUBLIC_ENABLE_ADSENSE === "true";
   const enableFeedback = process.env.NEXT_PUBLIC_ENABLE_FEEDBACK === "true";
   const adSenseClientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
