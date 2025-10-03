@@ -32,7 +32,7 @@ export default function RootLayout({
         {children}
 
         {/* Analytics - Only if enabled */}
-        {enableAnalytics && <Analytics />}
+        <Analytics />
 
         {/* Feedback Widget - Only if enabled and ID provided */}
         {enableFeedback && feedbackProjectId && (
